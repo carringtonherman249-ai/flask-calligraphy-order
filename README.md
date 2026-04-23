@@ -36,9 +36,7 @@
 ## 本地调试
 
 ```bash
-# 冲突解决后统一的启动顺序
 pip install -r requirements.txt
-python init_db.py
 python run.py 0.0.0.0 80
 ```
 
