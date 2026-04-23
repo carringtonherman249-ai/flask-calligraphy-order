@@ -3,22 +3,22 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql
 import config
 
-# 因MySQLDB不支持Python3，使用pymysql扩展库代替MySQLDB库
 pymysql.install_as_MySQLdb()
 
-# 初始化web应用
 app = Flask(__name__, instance_relative_config=True)
 app.config['DEBUG'] = config.DEBUG
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/flask_demo'.format(
+    config.username,
+    config.password,
+    config.db_address,
+)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# 设定数据库链接
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://{}:{}@{}/flask_demo'.format(config.username, config.password,
-                                                                             config.db_address)
-
-# 初始化DB操作对象
 db = SQLAlchemy(app)
 
-# 加载控制器
-from wxcloudrun import views
+from wxcloudrun import views  # noqa: E402
 
-# 加载配置
 app.config.from_object('config')
+
+with app.app_context():
+    db.create_all()
