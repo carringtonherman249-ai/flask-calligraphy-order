@@ -6,6 +6,7 @@ import requests
 from docx import Document
 from flask import render_template, request
 
+# 统一从包入口导入 app，避免与 run.py 形成冲突或循环导入
 from wxcloudrun import app
 from wxcloudrun.dao import (
     delete_counterbyid,
