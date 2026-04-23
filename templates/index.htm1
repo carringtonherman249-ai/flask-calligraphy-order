@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>墨客 · 手书订单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-stone-100 min-h-screen font-sans">
+    <div class="container max-w-2xl mx-auto px-4 py-6">
+        <div class="backdrop-blur-md bg-white/70 rounded-3xl shadow-xl p-6 md:p-8 border border-white/50">
+            <h1 class="text-3xl font-light text-stone-700 mb-2 tracking-wide">墨客·手书订单</h1>
+            <p class="text-stone-500 text-sm mb-8">填写要求，上传文稿，静候佳作</p >
+
+            <form id="orderForm" class="space-y-6">
+                <div>
+                    <label class="block text-stone-600 text-sm font-medium mb-1">客户姓名 <span class="text-rose-400">*</span></label>
+                    <input type="text" name="customer_name" required class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-stone-600 text-sm font-medium mb-1">书写风格</label>
+                        <select name="style" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <option value="清秀">清秀</option>
+                            <option value="潦草">潦草</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-stone-600 text-sm font-medium mb-1">字号</label>
+                        <select name="size" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <option value="小">小</option>
+                            <option value="大">大</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-stone-600 text-sm font-medium mb-1">纸张类型</label>
+                        <input type="text" name="paper_type" placeholder="如：洒金宣纸" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-stone-600 text-sm font-medium mb-1">交期要求</label>
+                        <select name="deadline" id="deadlineSelect" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                            <option value="1天内">1天内 (加急2.5倍)</option>
+                            <option value="3天内">3天内 (加急1.25倍)</option>
+                            <option value="预约3天后">预约3天后 (原价)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-stone-600 text-sm font-medium mb-1">定制纸张数量 <span class="text-stone-400 text-xs">(不填则按字数计纸杂费)</span></label>
+                    <input type="number" name="paper_count" min="0" id="paperCountInput" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-stone-600 text-sm font-medium">书写内容</label>
+                        <span class="text-xs text-stone-400">当前字数：<span id="wordCountDisplay">0</span> 字</span>
+                    </div>
+                    <textarea name="text_content" id="textContent" rows="6" class="w-full px-4 py-3 bg-white/60 backdrop-blur-sm border border-stone-200 rounded-xl focus:ring-2 focus:ring-emerald-400 outline-none resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-stone-600 text-sm font-medium mb-2">或上传 Word 文档</label>
+                    <input type="file" name="word_file" id="wordFileInput" accept=".docx" class="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    <p class="text-xs text-stone-400 mt-1">上传后自动提取文字，单客户累计上限 30,000 字</p >
+                </div>
+
+                <div class="bg-emerald-50/60 backdrop-blur-sm rounded-2xl p-4 flex justify-between items-center">
+                    <span class="text-stone-600">预估费用</span>
+                    <span class="text-3xl font-light text-emerald-800" id="pricePreview">¥0.00</span>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-medium rounded-xl shadow-lg shadow-emerald-200/50 hover:shadow-emerald-300/50 transition transform hover:-translate-y-0.5 active:translate-y-0">
+                    提交订单
+                </button>
+            </form>
+            <p class="text-center text-stone-400 text-xs mt-6">提交后获取专属客服微信，享受一对一服务</p >
+        </div>
+    </div>
+
+    <!-- 成功弹窗（显示微信号） -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm bg-black/20">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 text-center">
+            <h3 class="text-xl font-medium text-stone-700 mb-2">订单提交成功 🎉</h3>
+            <p class="text-stone-500 text-sm mb-4">请添加售后客服微信，获取订单进度</p >
+            <div id="accountList" class="bg-stone-50 rounded-xl p-4 mb-4 text-left space-y-2"></div>
+            <p class="text-xs text-stone-400 mb-4">点击微信号即可复制</p >
+            <button id="closeModalBtn" class="w-full py-2 bg-stone-100 text-stone-600 rounded-xl hover:bg-stone-200 transition">关闭</button>
+        </div>
+    </div>
+
+    <!-- DeepSeek AI 悬浮助手 -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <button id="aiToggleBtn" class="w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center text-2xl border border-stone-200 hover:shadow-2xl transition">🤖</button>
+        <div id="aiChatPanel" class="hidden absolute bottom-20 right-0 w-80 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-stone-200 p-4">
+            <div class="flex justify-between items-center mb-3">
+                <span class="font-medium text-stone-700">AI 文案助手</span>
+                <button id="aiCloseBtn" class="text-stone-400 hover:text-stone-600">✕</button>
+            </div>
+            <div id="chatMessages" class="h-64 overflow-y-auto mb-3 space-y-2 text-sm">
+                <div class="bg-emerald-50 p-2 rounded-lg text-stone-600">你好！我可以帮你润色文字或提供灵感~</div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="aiInput" placeholder="输入你的需求..." class="flex-1 px-3 py-2 bg-white/80 border border-stone-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-emerald-400">
+                <button id="aiSendBtn" class="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
