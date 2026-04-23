@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>后台订单管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">客户订单后台</h4>
+    <a href="/" class="btn btn-outline-secondary btn-sm">返回下单页</a>
+  </div>
+  <div class="alert alert-secondary">按时间倒序展示，点击“展开”查看全文，便于快速提取客户资料。</div>
+
+  <div class="table-responsive bg-white border rounded">
+    <table class="table table-hover align-middle mb-0" id="ordersTable">
+      <thead class="table-light">
+      <tr>
+        <th>ID</th><th>昵称</th><th>字数</th><th>纸张</th><th>字体</th><th>急单</th><th>金额</th><th>时间</th><th>内容</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  async function loadOrders() {
+    const res = await fetch('/api/orders');
+    const data = await res.json();
+    if (data.code !== 0) return;
+
+    const tbody = document.querySelector('#ordersTable tbody');
+    tbody.innerHTML = '';
+    data.data.forEach(order => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${order.id}</td>
+        <td>${order.nickname}</td>
+        <td>${order.char_count}</td>
+        <td>${order.paper_type}</td>
+        <td>${order.font_type}</td>
+        <td>${order.urgent ? '是' : '否'}</td>
+        <td>¥${order.amount}</td>
+        <td>${order.created_at}</td>
+        <td>
+          <details>
+            <summary>${(order.content_preview || '').replace(/</g,'&lt;')}</summary>
+            <div class="mt-2" style="white-space:pre-wrap;max-width:420px;">${(order.content || '').replace(/</g,'&lt;')}</div>
+          </details>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  loadOrders();
+</script>
+</body>
+</html>
